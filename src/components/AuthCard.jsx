@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export default function AuthCard({ onAuth }) {
   const [isLogin, setIsLogin] = useState(true)
@@ -9,6 +9,13 @@ export default function AuthCard({ onAuth }) {
   const [error, setError] = useState('')
 
   const baseUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
+
+  useEffect(() => {
+    const saved = localStorage.getItem('smartstudy_session')
+    if (saved) {
+      try { onAuth(JSON.parse(saved)) } catch {}
+    }
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -24,6 +31,23 @@ export default function AuthCard({ onAuth }) {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.detail || 'Request failed')
+      localStorage.setItem('smartstudy_session', JSON.stringify(data))
+      onAuth(data)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGuest = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch(`${baseUrl}/auth/guest`, { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail || 'Guest login failed')
+      localStorage.setItem('smartstudy_session', JSON.stringify(data))
       onAuth(data)
     } catch (err) {
       setError(err.message)
@@ -63,6 +87,14 @@ export default function AuthCard({ onAuth }) {
           {loading ? 'Please wait...' : isLogin ? 'Log in' : 'Sign up'}
         </button>
       </form>
+      <div className="flex items-center gap-3 my-3">
+        <div className="h-px flex-1 bg-white/10"/>
+        <span className="text-xs text-blue-200/80">or</span>
+        <div className="h-px flex-1 bg-white/10"/>
+      </div>
+      <button onClick={handleGuest} disabled={loading} className="w-full bg-white/10 hover:bg-white/20 disabled:opacity-60 rounded py-2 text-sm">
+        Continue as guest (no signup)
+      </button>
     </div>
   )
 }

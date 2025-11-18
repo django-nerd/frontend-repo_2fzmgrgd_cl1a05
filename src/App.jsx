@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Navbar from './components/Navbar'
 import AuthCard from './components/AuthCard'
 import UploadPanel from './components/UploadPanel'
@@ -8,7 +8,15 @@ function App() {
   const [session, setSession] = useState(null)
   const [analysis, setAnalysis] = useState(null)
 
+  useEffect(() => {
+    const saved = localStorage.getItem('smartstudy_session')
+    if (saved) {
+      try { setSession(JSON.parse(saved)) } catch {}
+    }
+  }, [])
+
   const handleLogout = () => {
+    localStorage.removeItem('smartstudy_session')
     setSession(null)
     setAnalysis(null)
   }
