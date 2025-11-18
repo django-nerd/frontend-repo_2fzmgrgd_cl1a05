@@ -1,71 +1,57 @@
+import { useState } from 'react'
+import Navbar from './components/Navbar'
+import AuthCard from './components/AuthCard'
+import UploadPanel from './components/UploadPanel'
+import Quiz from './components/Quiz'
+
 function App() {
+  const [session, setSession] = useState(null)
+  const [analysis, setAnalysis] = useState(null)
+
+  const handleLogout = () => {
+    setSession(null)
+    setAnalysis(null)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Subtle pattern overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.05),transparent_50%)]"></div>
-
-      <div className="relative min-h-screen flex items-center justify-center p-8">
-        <div className="max-w-2xl w-full">
-          {/* Header with Flames icon */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center mb-6">
-              <img
-                src="/flame-icon.svg"
-                alt="Flames"
-                className="w-24 h-24 drop-shadow-[0_0_25px_rgba(59,130,246,0.5)]"
-              />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(59,130,246,0.08),transparent_40%),radial-gradient(circle_at_80%_0%,rgba(99,102,241,0.08),transparent_40%)]"/>
+      <Navbar user={session?.user} onLogout={handleLogout} />
+      <main className="relative mx-auto max-w-6xl px-4 py-10 space-y-6">
+        {!session ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+            <div className="bg-slate-800/60 border border-white/10 rounded-2xl p-6 text-white">
+              <h1 className="text-3xl font-bold mb-2">Smart Study</h1>
+              <p className="text-blue-200 mb-4">Upload your notes as text, PDF, or an image, and get a quick summary with practice questions. Answer the quiz and see your score instantly.</p>
+              <ul className="text-blue-100/90 list-disc pl-5 space-y-1 text-sm">
+                <li>Register or log in to start</li>
+                <li>Paste text or upload a file</li>
+                <li>Get an AI-style summary and auto-generated questions</li>
+                <li>Practice and view your score</li>
+              </ul>
             </div>
-
-            <h1 className="text-5xl font-bold text-white mb-4 tracking-tight">
-              Flames Blue
-            </h1>
-
-            <p className="text-xl text-blue-200 mb-6">
-              Build applications through conversation
-            </p>
+            <AuthCard onAuth={setSession} />
           </div>
-
-          {/* Instructions */}
-          <div className="bg-slate-800/50 backdrop-blur-sm border border-blue-500/20 rounded-2xl p-8 shadow-xl mb-6">
-            <div className="flex items-start gap-4 mb-6">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-lg flex items-center justify-center font-bold">
-                1
-              </div>
-              <div>
-                <h3 className="font-semibold text-white mb-1">Describe your idea</h3>
-                <p className="text-blue-200/80 text-sm">Use the chat panel on the left to tell the AI what you want to build</p>
-              </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            <div className="lg:col-span-2 space-y-6">
+              <UploadPanel token={session.token} onResult={setAnalysis} />
+              {analysis && (
+                <div id="ai" className="bg-slate-800/60 border border-white/10 rounded-2xl p-6 text-white">
+                  <h3 className="text-lg font-semibold mb-2">Summary</h3>
+                  <p className="text-blue-100 whitespace-pre-wrap">{analysis.summary}</p>
+                </div>
+              )}
             </div>
-
-            <div className="flex items-start gap-4 mb-6">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-lg flex items-center justify-center font-bold">
-                2
-              </div>
-              <div>
-                <h3 className="font-semibold text-white mb-1">Watch it build</h3>
-                <p className="text-blue-200/80 text-sm">Your app will appear in this preview as the AI generates the code</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-lg flex items-center justify-center font-bold">
-                3
-              </div>
-              <div>
-                <h3 className="font-semibold text-white mb-1">Refine and iterate</h3>
-                <p className="text-blue-200/80 text-sm">Continue the conversation to add features and make changes</p>
-              </div>
+            <div className="lg:col-span-1">
+              <Quiz token={session.token} noteId={analysis?.note_id} />
             </div>
           </div>
-
-          {/* Footer */}
-          <div className="text-center">
-            <p className="text-sm text-blue-300/60">
-              No coding required • Just describe what you want
-            </p>
-          </div>
-        </div>
-      </div>
+        )}
+      </main>
+      <footer className="relative px-4 py-8">
+        <p className="text-center text-blue-300/70 text-sm">Built with care — Smart Study</p>
+      </footer>
     </div>
   )
 }
